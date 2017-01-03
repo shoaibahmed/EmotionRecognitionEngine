@@ -1,49 +1,15 @@
-function [ net ] = addClassificationLayer( net, varargin )
-%ADDREGRESSIONLAYER Takes a network as input and adds a regression layer at the end
+function [ net ] = addClassificationLayer( net, numClasses, varargin )
+%ADDREGRESSIONLAYER Takes a network as input and reinitializes the classification layer along with addition of softmax loss at the end
 
 opts.init_bias = [0, 0, 0];
-opts.classificationLayers = 1;
-opts.outputSize = {[14, 14, 512, 4], [1, 1, 64, 32], [1, 1, 32, 4]};
-opts.fineTuneWholeNetwork = false;
+opts.classificationLayers = 3;
+opts.outputSize = {[14, 14, 512, numClasses * 4], [1, 1, numClasses * 4, numClasses * 2], [1, 1, 32, numClasses]};
 opts.learningRate = 1e-5;
 opts.weightsScale = [1e4, 1e4, 1e4];
 opts.biasesScale = [0, 0, 0];
-opts.learningRateFT = [1e-10, 0];
-%opts.weightDecay = [1e-12 , 1e-12];
-opts.weightDecay = [0, 0];
-%opts.outputSize = {[14, 14, 512, 4], [1, 1, 64, 4], [1, 1, 512, 4]};
+opts.weightDecay = [1e-12 , 1e-12];
 
 [opts, varargin] = vl_argparse(opts,varargin) ;
-
-if opts.fineTuneWholeNetwork
-    % Set Hyper-parameters for Network
-    for i=1:numel(net.layers)
-        if ~strcmp(net.layers{i}.type,'conv'), continue; end
-        if ~isfield(net.layers{i}, 'learningRate')
-            net.layers{i}.learningRate = [opts.learningRateFT(1), opts.learningRateFT(2)];
-        end
-        if ~isfield(net.layers{i}, 'weightDecay')
-            net.layers{i}.weightDecay = opts.weightDecay;
-        end
-
-        %   net.layers{i}.filtersMomentum = zeros(size(net.layers{i}.weights{1}), ...
-        %     class(net.layers{i}.weights{1})) ;
-        %   net.layers{i}.biasesMomentum = zeros(size(net.layers{i}.weights{2}), ...
-        %     class(net.layers{i}.weights{2})) ; 
-        %   if ~isfield(net.layers{i}, 'filtersLearningRate')
-        %     net.layers{i}.filtersLearningRate = 1 ;
-        %   end
-        %   if ~isfield(net.layers{i}, 'biasesLearningRate')
-        %     net.layers{i}.biasesLearningRate = 1 ;
-        %   end
-        %   if ~isfield(net.layers{i}, 'filtersWeightDecay')
-        %     net.layers{i}.filtersWeightDecay = 1 ;
-        %   end
-        %   if ~isfield(net.layers{i}, 'biasesWeightDecay')
-        %     net.layers{i}.biasesWeightDecay = 1 ;
-        %   end
-    end
-end
 
 for i = 1 : opts.classificationLayers
     % Randomly initialize the weights and biases for regression layer
@@ -59,7 +25,7 @@ for i = 1 : opts.classificationLayers
         'learningRate', [opts.learningRate, opts.learningRate]) ;
     
     % Add non-linearity if not the last layer
-    if i ~= opts.regressionLayers
+    if i ~= opts.classificationLayers
         net.layers{end+1} = struct('type', 'relu') ;
         
         % Add regularization
@@ -68,8 +34,8 @@ for i = 1 : opts.classificationLayers
     
 end
 
-% Add L2 loss on top of the network
-net.layers{end+1} = struct('type', 'nnL2loss') ;
+% Add softmax loss on top of the network
+net.layers{end+1} = struct('type', 'softmaxloss') ;
 
 end
 

@@ -33,6 +33,8 @@ choosenLabel = 1;
 global im;
 global generatePredictions;
 generatePredictions = false;
+global training;
+training = false;
 
 % Load labels
 fileID = fopen('labels.txt');

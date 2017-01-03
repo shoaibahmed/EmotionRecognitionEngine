@@ -22,7 +22,7 @@ function varargout = emotionRecognitionEngineGUI(varargin)
 
 % Edit the above text to modify the response to help emotionRecognitionEngineGUI
 
-% Last Modified by GUIDE v2.5 02-Jan-2017 23:37:09
+% Last Modified by GUIDE v2.5 04-Jan-2017 02:41:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,8 +61,13 @@ guidata(hObject, handles);
 % UIWAIT makes emotionRecognitionEngineGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
+% Set status and output labels
+set(handles.outputLabel, 'string', '');
+set(handles.statusBar, 'string', 'Initializing');
+
 % Initialize the recognition engine
 initializeRecognitionEngine;
+set(handles.statusBar, 'string', 'Initialization completed');
 
 % Create a callback for updating the system
 handles.timer = timer(...
@@ -89,13 +94,14 @@ varargout{1} = handles.output;
 
 function updateDisplay(hTimerObj, timerEvent, handles)
 global cam;
+if isempty(cam), return, end;
+
 global im;
 global net;
 global opts;
 global generatePredictions;
 global DAG;
 
-if isempty(cam), return, end;
 im = snapshot(cam);
 imshow(im, 'Parent', handles.imagePlaceholder);
 
@@ -135,6 +141,7 @@ function startCam_Callback(hObject, eventdata, handles)
 global cam;
 if ~isempty(cam), return, end;
 cam = webcam(1);
+set(handles.statusBar, 'string', 'Camera started');
 
 
 % --- Executes on button press in stopCam.
@@ -146,6 +153,7 @@ global cam;
 if isempty(cam), return, end;
 %clear cam;
 cam = [];
+set(handles.statusBar, 'string', 'Camera stopped');
 
 % if strcmp(get(handles.timer, 'Running'), 'on')
 %     stop(handles.timer);
@@ -157,6 +165,9 @@ function startTrainingButton_Callback(hObject, eventdata, handles)
 % hObject    handle to startTrainingButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global training;
+training = true;
+set(handles.statusBar, 'string', 'Training started');
 
 
 % --- Executes on button press in stopTrainingButton.
@@ -164,6 +175,9 @@ function stopTrainingButton_Callback(hObject, eventdata, handles)
 % hObject    handle to stopTrainingButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global training;
+training = false;
+set(handles.statusBar, 'string', 'Training stopped');
 
 
 % --- Executes on button press in startPredictionsButton.
@@ -173,6 +187,7 @@ function startPredictionsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global generatePredictions;
 generatePredictions = true;
+set(handles.statusBar, 'string', 'Predictions turned on');
 
 
 % --- Executes on button press in stopPredictionsButton.
@@ -182,3 +197,30 @@ function stopPredictionsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global generatePredictions;
 generatePredictions = false;
+set(handles.outputLabel, 'string', '');
+set(handles.statusBar, 'string', 'Predictions turned off');
+
+
+% --- Executes on button press in reinitializeNetwork.
+function reinitializeNetwork_Callback(hObject, eventdata, handles)
+% hObject    handle to reinitializeNetwork (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global net;
+global DAG;
+global labelList;
+if DAG
+    disp('Method not supported for DAG');
+    set(handles.statusBar, 'string', 'Method not supported for DAG');
+else
+    numClasses = length(labelList);
+    net = addClassificationLayer(net, numClasses);
+    set(handles.statusBar, 'string', 'Network reinitialization complete');
+end
+
+
+% --- Executes on button press in saveNetworkButton.
+function saveNetworkButton_Callback(hObject, eventdata, handles)
+% hObject    handle to saveNetworkButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
