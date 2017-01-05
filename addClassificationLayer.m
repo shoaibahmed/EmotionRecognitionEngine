@@ -1,15 +1,18 @@
 function [ net ] = addClassificationLayer( net, numClasses, varargin )
-%ADDREGRESSIONLAYER Takes a network as input and reinitializes the classification layer along with addition of softmax loss at the end
+%ADDCLASSIFICATIONLAYER Takes a network as input and reinitializes the classification layer along with addition of softmax layer at the end
 
 opts.init_bias = [0, 0, 0];
 opts.classificationLayers = 3;
-opts.outputSize = {[14, 14, 512, numClasses * 4], [1, 1, numClasses * 4, numClasses * 2], [1, 1, 32, numClasses]};
+opts.outputSize = {[7, 7, 512, numClasses * 4], [1, 1, numClasses * 4, numClasses * 2], [1, 1, numClasses * 2, numClasses]};
 opts.learningRate = 1e-5;
 opts.weightsScale = [1e4, 1e4, 1e4];
 opts.biasesScale = [0, 0, 0];
 opts.weightDecay = [1e-12 , 1e-12];
 
 [opts, varargin] = vl_argparse(opts,varargin) ;
+
+% Remove FC layers from the current network
+net.layers = net.layers(1 : end-6);
 
 for i = 1 : opts.classificationLayers
     % Randomly initialize the weights and biases for regression layer
@@ -31,11 +34,13 @@ for i = 1 : opts.classificationLayers
         % Add regularization
         net.layers{end+1} = struct('type', 'dropout', 'rate', 0.5) ;
     end
-    
 end
 
-% Add softmax loss on top of the network
-net.layers{end+1} = struct('type', 'softmaxloss') ;
+% Add softmax layer for predictions
+net.layers{end+1} = struct('type', 'softmax') ;
+
+% Make the network format compatible
+net = vl_simplenn_tidy(net);
 
 end
 

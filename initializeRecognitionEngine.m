@@ -6,6 +6,7 @@ global DAG;
 DAG = false; % Defines whether to load DAG or normal network
 
 global opts;
+opts.imageDim = 224;
 if DAG
     opts.model = 'F:/ConvLayers/src/models/imagenet-resnet-152-dag.mat';
     opts.layerName = 'prob';
@@ -13,7 +14,18 @@ else
     opts.model = 'F:/ConvLayers/src/models/imagenet-vgg-verydeep-19.mat';
 end
 
-opts.imageDim = 224;
+% Training params
+opts.learningRate = 0.001 ;
+opts.weightDecay = 0.0005 ;
+opts.momentum = 0.9 ;
+opts.randomSeed = 0 ;
+opts.memoryMapFile = fullfile(tempdir, 'matconvnet.bin') ;
+opts.gpus = [];
+opts.conserveMemory = true ;
+opts.backPropDepth = +inf ;
+opts.sync = false ;
+opts.cudnn = false ;
+opts.errorFunction = 'multiclass' ;
 
 % Load model
 global net;
@@ -35,6 +47,11 @@ global generatePredictions;
 generatePredictions = false;
 global training;
 training = false;
+global newModelFileName;
+newModelFileName = 'sas-custom.mat';
+global state;
+state = [];
+global updateFunctionTimer;
 
 % Load labels
 fileID = fopen('labels.txt');

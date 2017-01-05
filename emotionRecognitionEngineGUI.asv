@@ -293,7 +293,7 @@ for i=1:numel(net.layers)
     end
 end
 
-global state;
+glob
 state.momentum = {} ;
 for i = 1:numel(net.layers)
     if isfield(net.layers{i}, 'weights')
@@ -328,9 +328,6 @@ global training;
 % Add softmax layer on top of the network
 net.layers = net.layers(1 : end-1); % Remove softmax loss layer
 net.layers{end+1} = struct('type', 'softmax') ;
-
-% Make the network format compatible
-net = vl_simplenn_tidy(net);
 
 training = false;
 set(handles.statusBar, 'string', 'Training stopped');
