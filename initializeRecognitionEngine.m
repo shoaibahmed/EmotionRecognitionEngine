@@ -11,13 +11,13 @@ if DAG
     opts.model = 'F:/ConvLayers/src/models/imagenet-resnet-152-dag.mat';
     opts.layerName = 'prob';
 else
-    opts.model = 'F:/ConvLayers/src/models/imagenet-vgg-verydeep-19.mat';
+    opts.model = '../../MATLAB/ImageRetrieval/ConvNet/models/imagenet-vgg-verydeep-19.mat';
 end
 
 % Training params
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
-opts.momentum = 0.9 ;
+opts.momentum = 0 ;
 opts.randomSeed = 0 ;
 opts.memoryMapFile = fullfile(tempdir, 'matconvnet.bin') ;
 opts.gpus = [];
@@ -50,7 +50,7 @@ training = false;
 global newModelFileName;
 newModelFileName = 'sas-custom.mat';
 global state;
-state = [];
+state.learningRate = opts.learningRate;
 global updateFunctionTimer;
 
 % Load labels

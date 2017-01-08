@@ -2,10 +2,11 @@ function [ net ] = addClassificationLayer( net, numClasses, varargin )
 %ADDCLASSIFICATIONLAYER Takes a network as input and reinitializes the classification layer along with addition of softmax layer at the end
 
 opts.init_bias = [0, 0, 0];
-opts.classificationLayers = 3;
-opts.outputSize = {[7, 7, 512, numClasses * 4], [1, 1, numClasses * 4, numClasses * 2], [1, 1, numClasses * 2, numClasses]};
+opts.classificationLayers = 1;
+%opts.outputSize = {[7, 7, 512, numClasses * 4], [1, 1, numClasses * 4, numClasses * 2], [1, 1, numClasses * 2, numClasses]};
+opts.outputSize = {[7, 7, 512, numClasses]};
 opts.learningRate = 1e-5;
-opts.weightsScale = [1e4, 1e4, 1e4];
+opts.weightsScale = [1e10, 1e10, 1e10];
 opts.biasesScale = [0, 0, 0];
 opts.weightDecay = [1e-12 , 1e-12];
 

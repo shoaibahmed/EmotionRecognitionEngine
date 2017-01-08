@@ -129,6 +129,7 @@ if generatePredictions
     img = imresize(img, [opts.imageDim, opts.imageDim], 'bilinear');
     %averageImage = mean(mean(img));
     img = bsxfun(@minus, img, net.meta.normalization.averageImage);
+    %evalMode = 'test' ;
     
     % Feed the image through the network
     if DAG
@@ -138,12 +139,14 @@ if generatePredictions
         activation = net.vars(net.getVarIndex(opts.layerName)).value;
         activation = squeeze(gather(activation));
     else
+        %res = vl_simplenn(net, img, 'mode', evalMode);
         res = vl_simplenn(net, img);
         activation = squeeze(gather(res(end).x));        
     end
 
     [conf, ind] = max(activation);
     myText = net.meta.classes.description{ind};
+    myText = strcat([myText, '(', num2str(conf), ')']);
 
     set(handles.outputLabel, 'string', myText);
     
@@ -249,7 +252,6 @@ stop(updateFunctionTimer);
 
 global cam;
 if isempty(cam), return, end;
-%clear cam;
 cam = [];
 set(handles.statusBar, 'string', 'Camera stopped');
 
@@ -267,9 +269,6 @@ function startTrainingButton_Callback(hObject, eventdata, handles)
 % hObject    handle to startTrainingButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global training;
-training = true;
-
 global net;
 % Add softmax loss on top of the network
 net.layers = net.layers(1 : end-1); % Remove softmax layer
@@ -316,6 +315,10 @@ set(handles.stopTrainingButton, 'Enable', 'on');
 % Disable predictions button
 set(handles.startPredictionsButton, 'Enable', 'off');
 
+% Mark training flag to be true
+global training;
+training = true;
+
 
 % --- Executes on button press in stopTrainingButton.
 function stopTrainingButton_Callback(hObject, eventdata, handles)
@@ -324,6 +327,7 @@ function stopTrainingButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global net;
 global training;
+training = false;
 
 % Add softmax layer on top of the network
 net.layers = net.layers(1 : end-1); % Remove softmax loss layer
@@ -332,7 +336,6 @@ net.layers{end+1} = struct('type', 'softmax') ;
 % Make the network format compatible
 net = vl_simplenn_tidy(net);
 
-training = false;
 set(handles.statusBar, 'string', 'Training stopped');
 
 % Disable stop button and enable start button
@@ -348,8 +351,6 @@ function startPredictionsButton_Callback(hObject, eventdata, handles)
 % hObject    handle to startPredictionsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global generatePredictions;
-generatePredictions = true;
 set(handles.statusBar, 'string', 'Predictions turned on');
 
 % Disable start button and enable stop button
@@ -358,6 +359,9 @@ set(handles.stopPredictionsButton, 'Enable', 'on');
 
 % Disable training button
 set(handles.startTrainingButton, 'Enable', 'off');
+
+global generatePredictions;
+generatePredictions = true;
 
 
 % --- Executes on button press in stopPredictionsButton.
